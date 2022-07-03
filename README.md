@@ -14,6 +14,7 @@ It's a:
 * **Boost Board** - * *If your chosen system board operate down to ~3.3v as the battery discharges, a boost regulator should be employed to keep voltage up to 5v.
 * **Keyboard** - The design example uses Artsey.io chording layout.  Should be able to wire up any keybord layout and modify the keymaps.
 * **Display** - Development is being done on an SSD1306 for simplicity, but modules should be added other displays.  E.g. the Sharp Memory Display (https://www.adafruit.com/product/4694) would be very cool.
+  * https://forum.micropython.org/viewtopic.php?f=15&t=11551
 * 
 
 ## Planned Functions
