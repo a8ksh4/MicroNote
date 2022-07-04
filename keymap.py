@@ -1,6 +1,5 @@
 
 
-HOLD_TIME = 500
 
 LAYERS = (
     # BASE
@@ -30,5 +29,7 @@ CHORDS = {
     ('r', 't'):             'g',
     ('i', 'e'):             'h',
     #                       'i',
-
 }
+
+# Sort the keys for comparison later
+CHORDS = dict([(tuple(sorted(k)), v) for k, v in CHORDS.items()])

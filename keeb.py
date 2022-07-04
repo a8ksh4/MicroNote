@@ -3,11 +3,7 @@ import time
 from keymap import LAYERS, CHORDS
 import collections
 
-EVENT_T = collections.namedtuple('buttons', 
-                                'start_time', 
-                                'output_key',
-                                'last_output_time',
-                                'layer')
+
 
 
 # https://docs.arduino.cc/tutorials/nano-rp2040-connect/rp2040-python-api#gpio-map
@@ -23,6 +19,12 @@ BASE_LAYER = 0
 TICKER = 0
 EVENTS = []
 PENDING_BUTTONS = set()
+
+EVENT_T = collections.namedtuple("Event", ('buttons', 
+                                'start_time', 
+                                'output_key',
+                                'last_output_time',
+                                'layer'))
 # (keys, start_time, output key, last_output_time)
 # (pins, start_time, output_key, last_output_time)
 
@@ -38,10 +40,22 @@ PENDING_BUTTONS = set()
 # chord time starts when first key is pressed (or reset when layer shift is triggered)
 # 
 def get_output_key(buttons, layer):
-    pass
+    global LAYERS
+    global CHORDS
+
+    mapped_buttons = tuple(sorted([LAYERS[layer][b] for b in buttons]))
+
+    # single button press
+    if len(mapped_buttons) == 1:
+        return mapped_buttons[0]
+    
+    # chord
+    #results = [r for c, r in CHORDS.items() if c == actions]
+    result = CHORDS.get(mapped_buttons, None)
+    return result, None
 
 def get_next():
-    global TICKER
+    global TICKER  
     global HOLDTIME
     global BASE_LAYER
     global EVENTS
@@ -54,8 +68,9 @@ def get_next():
         current_layer = [BASE_LAYER,] + [e.layer for e in EVENTS if e.layer]
         current_layer = current_layer[-1]
 
-        buttons_pressed = [n for n, p  in enumerate(pins) if p.value()]
-        new_event = False
+        buttons_pressed = [n for n, p  in enumerate(pins) if not p.value()]
+        if buttons_pressed:
+            print('Pressed:', buttons_pressed)
 
         # Remove events whos buttons are no longer pressed.
         for event in EVENTS:
@@ -64,7 +79,8 @@ def get_next():
                 EVENTS.remove(event)
 
         # Remove buttons from buttons_pressed if associated with an event
-        all_event_butons = sum([e.buttons for e in EVENTS])
+        all_event_butons = sum([e.buttons for e in EVENTS], [])
+        #print('all event buttons:', all_event_butons)
         buttons_pressed = [b for b in buttons_pressed if b not in all_event_butons]
         # TODO: mark events inactive if not all of their original buttons are still pressed.
 
@@ -75,12 +91,13 @@ def get_next():
         if PENDING_BUTTONS:
             if not TICKER:
                 TICKER = clock
+            print('Pending:', PENDING_BUTTONS)
 
             # Check conditions for new event - Keys starting to be released or hold_time exceeded
             # TODO: maybe separate hold times for layer stuff vs chords. 
             if ( len(PENDING_BUTTONS) > len(buttons_pressed) 
                     or clock - TICKER > HOLDTIME ):
-                output_key, new_layer = get_output_key(buttons, curernt_layer)
+                output_key, new_layer = get_output_key(PENDING_BUTTONS, current_layer)
                 new_event = EVENT_T(buttons=list(PENDING_BUTTONS),
                                     start_time=clock,
                                     output_key=output_key,
@@ -89,4 +106,4 @@ def get_next():
 
         if EVENTS:
             last_event = EVENTS[-1]
-            return_key = last_event.outpu
+            return_key = last_event.output_key
