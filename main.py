@@ -17,9 +17,9 @@ WIFI_PASS = 'Blahblah_8'
 
 if __name__ == '__main__':
     oled.write('Running.')
-    time.sleep(1)
+    #time.sleep(1)
     oled.write('Hello world!')
-    time.sleep(1)
+    #time.sleep(1)
     oled.write(f'Pairing wifi:')
     oled.write(f'    {WIFI_NET}')
     status = wifi.join_network(WIFI_NET, WIFI_PASS)
@@ -33,6 +33,8 @@ if __name__ == '__main__':
         print('gc_start', time.ticks_ms())
         gc.collect()
         print('gc end', time.ticks_ms())
+        if pressed is not None:
+            oled.write(f'Key entered: {pressed}')
         if pressed == "_bs":
             if char_buffer:
                 char_buffer.pop()
@@ -44,7 +46,7 @@ if __name__ == '__main__':
             pass
         else:
             char_buffer.append(pressed)
-        oled.write(char_buffer) 
+        #oled.write(char_buffer) 
 
 
     # print('Running')
