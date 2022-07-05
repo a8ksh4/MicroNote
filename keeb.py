@@ -113,4 +113,4 @@ def get_next():
 
         if EVENTS:
             last_event = EVENTS[-1]
-            return_key = last_event.output_key
+            return(last_event.output_key)

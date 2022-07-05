@@ -11,16 +11,37 @@ display = ssd1306.SSD1306_I2C(128, 64, i2c_list[0], 0x3c)
 
 line_height = 10
 num_lines = int(64/line_height)
-text_buffer = ['' for n in range(num_lines)]
+TEXT_BUFFER = ['' for n in range(num_lines-1)]
+TYPED_LINE = ''
+LINE_LIMIT = 16
+
+
+def redraw():
+    global TEXT_BUFFER
+    global TYPED_LINE
+
+    display.fill(0)
+    for n, line in enumerate(TEXT_BUFFER):
+        display.text(line, 0, line_height*n, 1)
+    display.text(TYPED_LINE, 0, line_height*(num_lines-1), 1)
+    display.show()
+
+def typed(typed_line):
+    global LINE_LIMIT
+    global TYPED_LINE
+
+    if len(typed_line) > LINE_LIMIT:
+        TYPED_LINE = typed_line[-LINE_LIMIT:]
+    else:
+        TYPED_LINE = typed_line
+    print('TYPED_LINE is:', TYPED_LINE)
+    redraw()
 
 def write(new_line):
     # TODO: Rate limit, one refresh per second.
-    text_buffer[:-1] = text_buffer[1:]
-    text_buffer[-1] = new_line
-    display.fill(0)
-    for n, line in enumerate(text_buffer):
-        display.text(line, 0, line_height*n, 1)
-    display.show()
+    TEXT_BUFFER[:-1] = TEXT_BUFFER[1:]
+    TEXT_BUFFER[-1] = new_line
+    redraw()
 
 # display.text('Hello, World!', 0, 0, 1)
 # display.show()

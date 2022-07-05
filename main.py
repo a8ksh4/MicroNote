@@ -30,23 +30,27 @@ if __name__ == '__main__':
     char_buffer = []
     while True:
         pressed = keeb.get_next()
+        print("Main received key:", pressed)
         print('gc_start', time.ticks_ms())
         gc.collect()
         print('gc end', time.ticks_ms())
-        if pressed is not None:
-            oled.write(f'Key entered: {pressed}')
-        if pressed == "_bs":
+        if pressed == "_bspc":
             if char_buffer:
                 char_buffer.pop()
-        elif pressed == "_enter":
-            output = exec(char_buffer)
-            for line in output:
-                oled.write(line)
-            char_buffer = []
-            pass
+        elif pressed == "_entr":
+            exec_string = ''.join(char_buffer)
+            oled.write(exec_string)
+            try:
+                output = exec(exec_string)
+            except Exception as e:
+                output = str(e)
+            #for line in output:
+            #    oled.write(line)
+            oled.write(str(output))
+            char_buffer.clear()
         else:
             char_buffer.append(pressed)
-        #oled.write(char_buffer) 
+        oled.typed(''.join(char_buffer)) 
 
 
     # print('Running')
