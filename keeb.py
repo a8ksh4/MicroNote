@@ -24,20 +24,7 @@ EVENT_T = collections.namedtuple("Event", ('buttons',
                                 'output_key',
                                 'last_output_time',
                                 'layer'))
-# (keys, start_time, output key, last_output_time)
-# (pins, start_time, output_key, last_output_time)
 
-# Pin map to buttons:
-#  1  3  5  7  9
-#  0  2  4  6  8
-
-
-# Strategery
-# First keypress starts the process
-# Passing layer hold time transitions layer if it's a layer key
-#    layer transition stays until layer key is released
-# chord time starts when first key is pressed (or reset when layer shift is triggered)
-# 
 def get_output_key(buttons, layer):
     # global PINS
     global LAYERS
