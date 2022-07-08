@@ -1,6 +1,7 @@
 from machine import Pin
 import time
 from keymap import LAYERS, CHORDS, PINS
+from keys import SHIFTED
 import collections
 
 
@@ -18,12 +19,14 @@ BASE_LAYER = 0
 TICKER = 0
 EVENTS = []
 PENDING_BUTTONS = set()
+OS_SHIFT_PENDING = False
 
 EVENT_T = collections.namedtuple("Event", ('buttons', 
                                 'start_time', 
                                 'output_key',
                                 'last_output_time',
-                                'layer'))
+                                'layer',
+                                'active'))
 # (keys, start_time, output key, last_output_time)
 # (pins, start_time, output_key, last_output_time)
 
@@ -38,22 +41,30 @@ EVENT_T = collections.namedtuple("Event", ('buttons',
 #    layer transition stays until layer key is released
 # chord time starts when first key is pressed (or reset when layer shift is triggered)
 # 
-def get_output_key(buttons, layer):
+def get_output_key(buttons, layer, tap):
     # global PINS
     global LAYERS
     global CHORDS
 
-    # mapped_buttons = tuple(sorted([PINS[b] for b in buttons]))
-    mapped_buttons = tuple(sorted([LAYERS[layer][b] for b in buttons]))
+    mapped_buttons = [LAYERS[layer][b] for b in buttons]
+    if len(mapped_buttons) > 1 or tap:
+        # convert any hold-tap layer keys to just the (tap) key
+        mapped_buttons = [b if isinstance(b, str) else b[1] for b in mapped_buttons]
+        mapped_buttons = tuple(sorted(mapped_buttons))
+        if len(mapped_buttons) > 1:
+            result = CHORDS.get(mapped_buttons, None), None
+        else:
+            result = mapped_buttons[0], None
 
-    # single button press
-    if len(mapped_buttons) == 1:
-        return mapped_buttons[0], None
+    else:
+        if isinstance(mapped_buttons[0], str):
+            result = mapped_buttons[0], None
+        else:
+            result = None, mapped_buttons[0][0]
     
-    # chord
-    #results = [r for c, r in CHORDS.items() if c == actions]
-    result = CHORDS.get(mapped_buttons, None)
-    return result, None
+    print('get output key', buttons, layer, tap, result)
+
+    return result
 
 def get_next():
     global TICKER  
@@ -62,6 +73,7 @@ def get_next():
     global EVENTS
     global PENDING_BUTTONS
     global PINS
+    global OS_SHIFT_PENDING
 
     while True:
         time.sleep(.001)
@@ -98,19 +110,37 @@ def get_next():
             # Check conditions for new event - Keys starting to be released or hold_time exceeded
             # TODO: maybe separate hold times for layer stuff vs chords. 
             if ( len(PENDING_BUTTONS) > len(buttons_pressed) 
-                    or (TICKER and clock - TICKER > HOLDTIME) ):
+                    or clock - TICKER > HOLDTIME ):
+                tap =  clock - TICKER < HOLDTIME
+    
                 print(len(PENDING_BUTTONS), len(buttons_pressed), clock, TICKER, clock-TICKER)
-                output_key, new_layer = get_output_key(PENDING_BUTTONS, current_layer)
+                output_key, new_layer = get_output_key(PENDING_BUTTONS, current_layer, tap)
+
+                if output_key == '_os_shft':
+                    OS_SHIFT_PENDING = True
+                    output_key = None
+                
+                if output_key is not None and OS_SHIFT_PENDING:
+                    #if not output_key.startswith('_') and len(output_key) > 1:
+                    if len(output_key) == 1:
+                        output_key = SHIFTED[output_key]
+                    OS_SHIFT_PENDING = False
+
                 new_event = EVENT_T(buttons=list(PENDING_BUTTONS),
                                     start_time=clock,
                                     output_key=output_key,
                                     last_output_time=0,
-                                    layer=new_layer)
+                                    layer=new_layer,
+                                    active=output_key is not None or new_layer is not None)
                 print('New event:', new_event)
+                #for event in EVENTS:
+                #    event.active = False
                 EVENTS.append(new_event)
                 PENDING_BUTTONS.clear()
                 TICKER = 0
 
-        if EVENTS:
+        # Generate key press based on top active event.
+        if EVENTS and EVENTS[-1].active:
             last_event = EVENTS[-1]
             return(last_event.output_key)
+ 

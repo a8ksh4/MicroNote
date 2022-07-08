@@ -4,6 +4,9 @@ import time
 #import repl
 import keeb
 import gc
+from io import StringIO
+from contextlib import redirect_stdout
+
 
 WIFI_NET = 'dkcommonwealth'
 WIFI_PASS = 'Blahblah_8'
@@ -28,17 +31,25 @@ if __name__ == '__main__':
 
     oled.write(f'Enter the keys...')
     char_buffer = []
+    new_stdout = StringIO()
+
     while True:
         pressed = keeb.get_next()
+
+        if pressed is None:
+            continue
         print("Main received key:", pressed)
-        print('gc_start', time.ticks_ms())
-        gc.collect()
-        print('gc end', time.ticks_ms())
+
         if pressed == "_bspc":
             if char_buffer:
                 char_buffer.pop()
+        elif pressed in ('_ctrl', '_alt', '_tab', '_del'):
+            print('Skipped key:', pressed)
         elif pressed == "_entr":
-            exec_string = ''.join(char_buffer)
+            with redirect_stdout(new_stdout):
+                exec_string = ''.join(char_buffer)
+            s = new_stdout.getvalue()
+
             oled.write(exec_string)
             try:
                 output = exec(exec_string)
@@ -51,19 +62,6 @@ if __name__ == '__main__':
         else:
             char_buffer.append(pressed)
         oled.typed(''.join(char_buffer)) 
+        gc.collect()
 
 
-    # print('Running')
-    # scanner = wifi.get_scanner()
-    # networks = next(scanner)
-    # for n, network in enumerate(networks):
-    #     print(n, network)
-    # print("which to join?")
-    # n = int(input())
-    # print("joining", n, networks[n])
-    # print("passphrase?")
-    # #k = input()
-    # k = "Blahblah_8"
-    # print("entered:", k)
-    
-    # wifi.join_network(networks[n], k)
