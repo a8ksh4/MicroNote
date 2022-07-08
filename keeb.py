@@ -25,7 +25,6 @@ EVENT_T = collections.namedtuple("Event", ('buttons',
                                 'start_time', 
                                 'output_key',
                                 'last_output_time',
-<<<<<<< HEAD
                                 'layer',
                                 'active'))
 # (keys, start_time, output key, last_output_time)
@@ -43,11 +42,6 @@ EVENT_T = collections.namedtuple("Event", ('buttons',
 # chord time starts when first key is pressed (or reset when layer shift is triggered)
 # 
 def get_output_key(buttons, layer, tap):
-=======
-                                'layer'))
-
-def get_output_key(buttons, layer):
->>>>>>> 7dcb74788b4f6ac316fca948484b191810dae24d
     # global PINS
     global LAYERS
     global CHORDS
