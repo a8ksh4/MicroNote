@@ -5,11 +5,26 @@ import time
 import keeb
 import gc
 from io import StringIO
-from contextlib import redirect_stdout
+#from contextlib import redirect_stdout
+
+import io
+import os
+
+class DUP(io.IOBase):
+
+    def __init__(self, s):
+        self.s = s
+
+    def write(self, data):
+        self.s += data
+        return len(data)
+
+    def readinto(self, data):
+        return 0
 
 
-WIFI_NET = 'dkcommonwealth'
-WIFI_PASS = 'Blahblah_8'
+WIFI_NET = 'foo'
+WIFI_PASS = 'bar'
 
 # using default address 0x3C
 # i2c = I2C(sda=Pin(4), scl=Pin(5))
