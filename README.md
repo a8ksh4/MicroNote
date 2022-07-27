@@ -28,3 +28,24 @@ It's a:
 * "keeb.py" for user input - Depends on "keymap.py" for the keyboard layout, layers, and chords.  
 * "wifi.py" for network connectivity (if your board supports it)
 * "
+
+## Keyboard Implementation
+**Strategy** - I'm trying to enable keyboard behavior like the Artsey.io firmware... Last try with a keyboar firmware, I used per-key state tracking.  I'm thinking some sort of activity tracking might work better here.  e.g keys are pressed and either on release or after hold time is met, and activity is created and a typed key returned.  If the keys are still held, the activity retains ownership of the keys and generates a new key press every 0.5 seconds.  If subsequent keys are pressed, a new activity is generated and the previous activity is muted, and finally cleared when the keys it owns are released. 
+
+**Essential Behavior**
+* Individual keytaps
+* Hold/tap for layer change/keypress depending on timing.
+* Combinations of keys are registered as chords
+* Oneshots for shift, ctrl 
+
+**Flow**
+* buttons_pressed checked
+* remove events with their active buttons unpressed
+* remove buttons from buttons_pressed that are part of an existing event
+* if buttons_pressed: 
+  * move buttons_pressed to pending_buttons
+* if pending_buttons and not ticker:
+  * set ticker to clock
+* elif clock - ticker > hold_time:
+  * generate event
+* last event added generates button presses.
