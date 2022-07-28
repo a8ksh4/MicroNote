@@ -1,14 +1,13 @@
 from machine import Pin
+import rp2
+from rp2 import PIO
 import time
 from keymap import LAYERS, CHORDS, PINS
 from keys import SHIFTED
 import collections
 
-
-
-
 # https://docs.arduino.cc/tutorials/nano-rp2040-connect/rp2040-python-api#gpio-map
-PINS = [Pin(p, Pin.IN, Pin.PULL_UP) for p in PINS]
+#PINS = [Pin(p, Pin.IN, Pin.PULL_UP) for p in PINS]
 
 #HOLD_TIME = 500
 #LAYER_HOLDTIME = 300
@@ -27,12 +26,28 @@ EVENT_T = collections.namedtuple("Event", ('buttons',
                                 'last_output_time',
                                 'layer',
                                 'active'))
-# (keys, start_time, output key, last_output_time)
-# (pins, start_time, output_key, last_output_time)
 
-# Pin map to buttons:
-#  1  3  5  7  9
-#  0  2  4  6  8
+@rp2.asm_pio( set_init=[PIO.IN_HIGH]*32 )
+def irq_pins_changes():
+    mov(y, pins)
+    #in_(y, 32)
+    mov(isr, y)
+    push()
+
+    wrap_target()
+    label("read loop")
+    mov(x, pins)
+
+    jmp(x_not_y, "exit read loop")
+    jmp("read loop")
+    label("exit read loop")
+    
+    mov(isr, x)
+    mov(y, x)
+    push()
+    irq(1)
+
+    wrap()
 
 
 # Strategery
@@ -65,6 +80,40 @@ def get_output_key(buttons, layer, tap):
     print('get output key', buttons, layer, tap, result)
 
     return result
+
+def initInputPins(direction=Pin.PULL_UP):
+    for n in range(32):
+        try:
+            Pin(n, Pin.IN, direction)
+        except:
+            print("Couldn't initialize pin:", n)
+
+def activate(callback_func):
+    global SM
+    global CALLBACK 
+    global PINS_START
+    CALLBACK = callback_func
+    initInputPins()
+    SM = rp2.StateMachine(0, irq_pins_changes,
+                            freq=2000, in_base=Pin(0))
+    SM.irq(process_next, 0)
+    SM.active(1)
+    PINS_START = SM.get()
+    print(f'Initial Pin States: {PINS_START::>032b}')
+
+def pins_to_buttons(pins_next):
+    global PINS_START
+    return(pins_next)
+
+def process_next(sm):
+    global CALLBACK
+    # Like get_next, except activated by irq.
+    pin_states = sm.get()
+    CALLBACK(pin_states)
+    print(pin_states)
+    buttons_pressed = pins_to_buttons(pin_states)
+    CALLBACK(buttons_pressed)
+
 
 def get_next():
     global TICKER  
