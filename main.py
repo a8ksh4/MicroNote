@@ -31,17 +31,17 @@ def printFoo(foo):
 
 if __name__ == '__main__':
     print('In Main Now')
-    # keeb.activate(printFoo)
+    keeb.activate(printFoo)
     # for _ in range(10):
     #     time.sleep(1)
     
     # initPinsAsIn()
 
-    keeb.initInputPins()
-    sm = rp2.StateMachine(0, keeb.irq_pins_changes,
-                            freq=2000, in_base=Pin(0))
-    sm.irq(printFoo, 0)
-    sm.active(1)
+    # keeb.initInputPins()
+    # sm = rp2.StateMachine(0, keeb.irq_pins_changes,
+    #                         freq=2000, in_base=Pin(0))
+    # sm.irq(printFoo, 0)
+    # sm.active(1)
 
     # sm.active(1)
     # for n in range(10):

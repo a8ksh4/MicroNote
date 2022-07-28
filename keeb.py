@@ -94,23 +94,23 @@ def activate(callback_func):
     global PINS_START
     CALLBACK = callback_func
     initInputPins()
+    rp2.PIO(0).irq(process_next)
     SM = rp2.StateMachine(0, irq_pins_changes,
                             freq=2000, in_base=Pin(0))
-    SM.irq(process_next, 0)
+    #SM.irq(process_next, 0)
     SM.active(1)
     PINS_START = SM.get()
     print(f'Initial Pin States: {PINS_START::>032b}')
 
 def pins_to_buttons(pins_next):
     global PINS_START
-    return(pins_next)
+    same = PINS_START ^ pins_next
+    pins = [n for n in range(32) if same & 2**n]
+    return(pins)
 
 def process_next(sm):
     global CALLBACK
-    # Like get_next, except activated by irq.
-    pin_states = sm.get()
-    CALLBACK(pin_states)
-    print(pin_states)
+    pin_states = sm.state_machine(0).get()
     buttons_pressed = pins_to_buttons(pin_states)
     CALLBACK(buttons_pressed)
 
