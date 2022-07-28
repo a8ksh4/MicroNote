@@ -17,7 +17,8 @@ def initPinsAsIn(direction=Pin.PULL_UP):
 
 def printFromGet(sm):
     global COUNT
-    out = sm.get()
+    print(dir(sm))
+    out = sm.state_machine(0).get()
     print(f'{COUNT} - {out:>032b}')
     COUNT += 1
 
@@ -27,12 +28,13 @@ if __name__ == '__main__':
     
     initPinsAsIn()
 
+    rp2.PIO(0).irq (printFromGet)
     sm = rp2.StateMachine(0, pio_junk.irq_pins_changes,
                             freq=2000, in_base=Pin(0))
-    sm.irq(printFromGet, 0)
+    #sm.irq(printFromGet, 0)
 
     sm.active(1)
-    for n in range(10):
-        out = sm.get()
-        print(f'{n}, {out:>032b}')
-    sm.active(0)
+    # for n in range(10):
+    #     out = sm.get()
+    #     print(f'{n}, {out:>032b}')
+    # sm.active(0)
