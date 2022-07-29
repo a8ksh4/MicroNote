@@ -4,47 +4,41 @@ import safety_pin
 from machine import Pin
 import rp2
 import time
-import keeb
+import os
+import myterm
 
-# COUNT = 0
 
-# def initPinsAsIn(direction=Pin.PULL_UP):
-#     for n in range(32):
-#         try:
-#             Pin(n, Pin.IN, direction)
-#         except:
-#             print("Couldn't initialize pin:", n)
+# os.dupterm(myio)
+# myio.clear()
+# exec("print('hello world')")
+# now, access result of "exec" trough "myio.data"
 
-# def printFromGet(sm):
-#     global COUNT
-#     out = sm.get()
-#     print(f'{COUNT} - {out:>032b}')
-#     COUNT += 1
+from machine import Pin, I2C
+import ssd1306
 
-N = 0
-def printFoo(foo):
-    global N
-    print(f'{N} - FOO: {foo}')
-    N += 1
+STREAM = myterm.stream
+
+# https://docs.micropython.org/en/latest/esp8266/tutorial/ssd1306.html
+
+i2c_list    = [None, None]
+i2c_list[0] = I2C(0, scl=Pin(13), sda=Pin(12), freq=100_000)
+i2c_list[1] = I2C(1, scl=Pin(7), sda=Pin(6), freq=100_000)
+
+display = ssd1306.SSD1306_I2C(128, 64, i2c_list[0], 0x3c)
+
+# from fbconsole import FBConsole
+# import os
+# scr = FBConsole(display)
+# os.
+
+# KEY_BUFFER = b''
+# def relayTyping(keystroke):
+#     if keystroke
 
 
 
 if __name__ == '__main__':
     print('In Main Now')
-    keeb.activate(printFoo)
-    # for _ in range(10):
-    #     time.sleep(1)
-    
-    # initPinsAsIn()
+    print('and myterm:')
+    print(STREAM.read())
 
-    # keeb.initInputPins()
-    # sm = rp2.StateMachine(0, keeb.irq_pins_changes,
-    #                         freq=2000, in_base=Pin(0))
-    # sm.irq(printFoo, 0)
-    # sm.active(1)
-
-    # sm.active(1)
-    # for n in range(10):
-    #     out = sm.get()
-    #     print(f'{n}, {out:>032b}')
-    # sm.active(0)
