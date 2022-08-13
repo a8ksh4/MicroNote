@@ -59,7 +59,7 @@ CHORDS = {
     ('t', 'i'):             '!',
     ('o', 't', 'r', 'a'):   '_tab',
     ('a', 'e'):             '_entr',
-    ('s', 'e'):             '_ctrl',
+    ('s', 'e'):             '_os_ctrl',
     ('s', 'i'):             '_alt',
     ('s', 't', 'r', 'e'):   '_os_shft',
     ('r', 'e'):             '_bspc',

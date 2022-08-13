@@ -48,4 +48,4 @@ stream = InjectStream()
 os.dupterm(stream)
 
 # call this from your key handler (e.g. pin interrupt?)
-# stream.inject('input to type')
+# stream.inject('input to type')ll

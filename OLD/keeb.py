@@ -192,7 +192,8 @@ def process_next(sm):
     # Generate key press based on top active event.
     if EVENTS and EVENTS[-1].active:
         last_event = EVENTS[-1]
-        CALLBACK(last_event.output_key)
+        if last_event is not None:
+            CALLBACK(last_event.output_key)
 
 
 # def get_next():

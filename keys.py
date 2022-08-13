@@ -46,3 +46,18 @@ SHIFTED = {
     '`': '~',
     "'": '"',
 }
+
+ASCII_CODES = {
+    '_bksp': b'\b',
+    '_entr': b'\r',
+    '_tab': b'\t',
+}
+
+CTRLED = {
+    'a': b'\x01',
+    'b': b'\x02',
+    'c': b'\x03',
+    'd': b'\x04',
+    
+
+}

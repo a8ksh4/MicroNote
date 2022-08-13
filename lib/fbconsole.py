@@ -1,8 +1,12 @@
 import framebuf
 import uio
+import os
 
+_MP_STREAM_POLL = const(3)
+_MP_STREAM_POLL_RD = const(0x0001)
 class FBConsole(uio.IOBase):
     def __init__(self, fb, bgcolor=0, fgcolor=-1, width=-1, height=-1, readobj=None):
+        self._data = bytearray()
         self.readobj = readobj
         self.fb = fb
         if width > 0:
@@ -23,6 +27,22 @@ class FBConsole(uio.IOBase):
         self.fgcolor = fgcolor
         self.line_height(8)
         self.cls()
+    
+    def inject(self, data):
+        self._data += data
+
+        if hasattr(os, 'dupterm_notify'):
+            os.dupterm_notify(None)
+
+    def read(self, sz=None):
+        d = self._data
+        self._data[:] = b''
+        return d
+
+    def ioctl(self, op, arg):
+        if op == _MP_STREAM_POLL:
+            if self._data:
+                return _MP_STREAM_POLL_RD
 
     def cls(self):
         self.x = 0
@@ -87,11 +107,19 @@ class FBConsole(uio.IOBase):
             pass
         return len(buf)
 
-    def readinto(self, buf, nbytes=0):
-        if self.readobj != None:
-            return self.readobj.readinto(buf, nbytes)
-        else:
+    # def readinto(self, buf, nbytes=0):
+    #     if self.readobj != None:
+    #         return self.readobj.readinto(buf, nbytes)
+    #     else:
+    #         return None
+
+    def readinto(self, buf):
+        if not self._data:
             return None
+        b = min(len(buf), len(self._data))
+        buf[:b] = self._data[:b]
+        self._data = self._data[b:]
+        return b
         
     def _newline(self):
         self.x = 0
