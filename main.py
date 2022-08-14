@@ -10,7 +10,7 @@ import safety_pin
 #from machine import Pin, I2C
 #import ssd1306
 import oled_fb
-#import keeb
+import keeb
 
 #STREAM = myterm.stream
 #STREAM = oled_fb.myterm.stream
@@ -44,4 +44,7 @@ if __name__ == '__main__':
     print('In Main Now')
     print('and myterm:')
     #print(STREAM.read())
+    while True:
+        print("GET NEXT:", keeb.get_next())
+    
 
