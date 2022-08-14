@@ -15,10 +15,12 @@ import keeb
 #STREAM = myterm.stream
 #STREAM = oled_fb.myterm.stream
 STREAM = oled_fb.scr
-# keeb.activate(STREAM.inject)
+keeb.INJECT_FUNC = STREAM.inject
 
 STREAM.inject('1 + 1')
 STREAM.inject(b'\r')
+
+keeb.start_timer()
 
 
 # https://docs.micropython.org/en/latest/esp8266/tutorial/ssd1306.html
@@ -44,7 +46,7 @@ if __name__ == '__main__':
     print('In Main Now')
     print('and myterm:')
     #print(STREAM.read())
-    while True:
-        print("GET NEXT:", keeb.get_next())
+    #while True:
+    #    print("GET NEXT:", keeb.get_next())
     
 

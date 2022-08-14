@@ -2,12 +2,13 @@ from machine import Pin
 import time
 import sys
 
-PIN_NUM = 25
-SAFETY_PIN = Pin(PIN_NUM, Pin.IN, Pin.PULL_UP)
+PIN_NUMS = (25, 7)
+SAFETY_PINS = [Pin(N, Pin.IN, Pin.PULL_UP) for N in PIN_NUMS]
 
-print(f"Checking Safety Pin {PIN_NUM}...")
+print(f"Checking Safety Pin {PIN_NUMS}...")
 time.sleep(.1)
-if not SAFETY_PIN.value():
-    print("PIN Shorted to Ground!")
-    print("Aborting loading and quitting.")
-    sys.exit()
+for SAFETY_PIN in SAFETY_PINS:
+    if not SAFETY_PIN.value():
+        print("PIN Shorted to Ground!")
+        print("Aborting loading and quitting.")
+        sys.exit()
