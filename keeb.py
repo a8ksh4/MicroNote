@@ -20,6 +20,7 @@ TICKER = 0
 EVENTS = []
 PENDING_BUTTONS = set()
 OS_SHIFT_PENDING = False
+OS_CTRL_PENDING = False
 INJECT_FUNC = None
 TIMER = None
 DEBUG = False
@@ -88,6 +89,7 @@ def poll_keys(foo):
     global PENDING_BUTTONS
     global PINS
     global OS_SHIFT_PENDING
+    global OS_CTRL_PENDING
 
 
     clock = time.ticks_ms()
@@ -148,6 +150,9 @@ def poll_keys(foo):
                 if output_key in CTRLED:
                     output_key = CTRLED[output_key]
                 OS_CTRL_PENDING = False
+
+            if output_key in CODES:
+                output_key = CODES[output_key]
 
             new_event = EVENT_T(buttons=list(PENDING_BUTTONS),
                                 start_time=clock,

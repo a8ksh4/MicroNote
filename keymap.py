@@ -62,7 +62,7 @@ CHORDS = {
     ('s', 'e'):             '_os_ctrl',
     ('s', 'i'):             '_alt',
     ('s', 't', 'r', 'e'):   '_os_shft',
-    ('r', 'e'):             '_bspc',
+    ('r', 'e'):             '_bksp',
     ('o', 'r', 'a'):        '_esc',
 }
 
