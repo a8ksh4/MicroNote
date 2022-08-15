@@ -19,12 +19,12 @@ def get_scanner():
             networks.add(ap)
         yield aps_to_dicts(networks)
 
-def join_network(ap, key):
+def join_network(ap, ssid, key):
     global wlan
     
     print(dir(wlan))
     #ssid = str(ap['ssid'])
-    ssid = "dkcommonwealth"
+    #ssid = "foobar"
     #channel = ap['channel']
     security = wlan.WPA_PSK
     #print(help(wlan.config))
