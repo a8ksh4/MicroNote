@@ -13,8 +13,8 @@ PINS = [Pin(p, Pin.IN, Pin.PULL_UP) for p in PINS]
 #HOLD_TIME = 500
 #LAYER_HOLDTIME = 300
 #CHORD_WAITTIME = 500
-HOLDTIME = 1000
-ONESHOT_TIMEOUT = 2000
+HOLDTIME = 250
+# ONESHOT_TIMEOUT = 500
 BASE_LAYER = 0
 TICKER = 0
 EVENTS = []
@@ -24,19 +24,6 @@ OS_CTRL_PENDING = False
 INJECT_FUNC = None
 TIMER = None
 DEBUG = False
-
-EVENT_T = collections.namedtuple("Event", ('buttons', 
-                                'start_time', 
-                                'output_key',
-                                'last_output_time',
-                                'layer',
-                                'active'))
-# (keys, start_time, output key, last_output_time)
-# (pins, start_time, output_key, last_output_time)
-
-# Pin map to buttons:
-#  1  3  5  7  9
-#  0  2  4  6  8
 
 
 # Strategery
@@ -59,6 +46,7 @@ def get_output_key(buttons, layer, tap):
     # global PINS
     global LAYERS
     global CHORDS
+    #print('foo buttons:', buttons, 'layer:', layer, 'tap:', tap)
 
     mapped_buttons = [LAYERS[layer][b] for b in buttons]
     if len(mapped_buttons) > 1 or tap:
@@ -66,7 +54,12 @@ def get_output_key(buttons, layer, tap):
         mapped_buttons = [b if isinstance(b, str) else b[1] for b in mapped_buttons]
         mapped_buttons = tuple(sorted(mapped_buttons))
         if len(mapped_buttons) > 1:
-            result = CHORDS.get(mapped_buttons, None), None
+            result = CHORDS.get(mapped_buttons, None)
+            #print("RESULT:", result)
+            if isinstance(result, str):
+                result = result, None
+            if result is None:
+                result = None, None
         else:
             result = mapped_buttons[0], None
 
@@ -76,7 +69,7 @@ def get_output_key(buttons, layer, tap):
         else:
             result = None, mapped_buttons[0][0]
     
-    printd(f'get output key: {buttons}, {layer}, {tap}, {result}')
+    #print(f'get output key: {buttons}, {layer}, {tap}, {result}')
 
     return result
 
@@ -94,7 +87,7 @@ def poll_keys(foo):
 
     clock = time.ticks_ms()
 
-    current_layer = [BASE_LAYER,] + [e.layer for e in EVENTS if e.layer]
+    current_layer = [BASE_LAYER,] + [e['layer'] for e in EVENTS if e['layer']]
     current_layer = current_layer[-1]
 
     buttons_pressed = [n for n, p  in enumerate(PINS) if not p.value()]
@@ -103,12 +96,12 @@ def poll_keys(foo):
         pass
     # Remove events whos buttons are no longer pressed.
     for event in EVENTS:
-        still_pressed = [b for b in event.buttons if b in buttons_pressed]
+        still_pressed = [b for b in event['buttons'] if b in buttons_pressed]
         if not still_pressed:
             EVENTS.remove(event)
 
     # Remove buttons from buttons_pressed if associated with an event
-    all_event_butons = sum([e.buttons for e in EVENTS], [])
+    all_event_butons = sum([e['buttons'] for e in EVENTS], [])
     #print('all event buttons:', all_event_butons)
     buttons_pressed = [b for b in buttons_pressed if b not in all_event_butons]
     # TODO: mark events inactive if not all of their original buttons are still pressed.
@@ -129,7 +122,13 @@ def poll_keys(foo):
             tap =  clock - TICKER < HOLDTIME
 
             printd(f'{(len(PENDING_BUTTONS), len(buttons_pressed), clock, TICKER, clock-TICKER)}')
+            #print(PENDING_BUTTONS, current_layer, tap)
             output_key, new_layer = get_output_key(PENDING_BUTTONS, current_layer, tap)
+
+            #print(output_key, new_layer)
+            if output_key == '_set_base':
+                BASE_LAYER = new_layer
+                output_key, new_layer = None, None
 
             if output_key == '_os_shft':
                 OS_SHIFT_PENDING = True
@@ -154,12 +153,20 @@ def poll_keys(foo):
             if output_key in CODES:
                 output_key = CODES[output_key]
 
-            new_event = EVENT_T(buttons=list(PENDING_BUTTONS),
-                                start_time=clock,
-                                output_key=output_key,
-                                last_output_time=0,
-                                layer=new_layer,
-                                active=output_key is not None or new_layer is not None)
+            new_event = {'buttons': list(PENDING_BUTTONS),
+                            'start_time': clock,
+                            'output_key': output_key,
+                            'last_output_time': 0,
+                            'layer': new_layer,
+                            'active': output_key is not None or new_layer is not None
+                        }
+
+            # new_event = EVENT_T(buttons=list(PENDING_BUTTONS),
+            #                     start_time=clock,
+            #                     output_key=output_key,
+            #                     last_output_time=0,
+            #                     layer=new_layer,
+            #                     active=output_key is not None or new_layer is not None)
             printd('New event: {new_event}')
             #for event in EVENTS:
             #    event.active = False
@@ -168,8 +175,8 @@ def poll_keys(foo):
             TICKER = 0
 
     # Generate key press based on top active event.
-    if EVENTS and EVENTS[-1].active:
+    if EVENTS and EVENTS[-1]['active']:
         last_event = EVENTS[-1]
-        if last_event.output_key is not None:
-            INJECT_FUNC(last_event.output_key)
-            #last_event.active = False
+        if last_event['output_key'] is not None:
+            INJECT_FUNC(last_event['output_key'])
+            last_event['active'] = False

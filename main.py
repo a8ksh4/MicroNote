@@ -11,6 +11,7 @@ import safety_pin
 #import ssd1306
 import oled_fb
 import keeb
+from tools import *
 
 #STREAM = myterm.stream
 #STREAM = oled_fb.myterm.stream
