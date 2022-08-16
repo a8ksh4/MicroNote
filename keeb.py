@@ -24,6 +24,7 @@ OS_CTRL_PENDING = False
 INJECT_FUNC = None
 TIMER = None
 DEBUG = False
+DELAYED_INPUT = [] # interface for other tools to ask for something to be typed.
 
 
 # Strategery
@@ -83,7 +84,14 @@ def poll_keys(foo):
     global PINS
     global OS_SHIFT_PENDING
     global OS_CTRL_PENDING
+    global INJECT_FUNC
+    global DELAYED_INPUT
 
+    if DELAYED_INPUT:
+        value = DELAYED_INPUT.pop()
+        time.sleep(0.2)
+        INJECT_FUNC(value)
+        return
 
     clock = time.ticks_ms()
 

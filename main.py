@@ -12,11 +12,14 @@ import safety_pin
 import oled_fb
 import keeb
 from tools import *
+import micro_ed
 
 #STREAM = myterm.stream
 #STREAM = oled_fb.myterm.stream
 STREAM = oled_fb.scr
 keeb.INJECT_FUNC = STREAM.inject
+micro_ed.DELAYED_INPUT = keeb.DELAYED_INPUT
+ed = micro_ed.ed
 
 STREAM.inject('1 + 1')
 STREAM.inject(b'\r')
